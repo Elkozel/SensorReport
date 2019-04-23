@@ -1,0 +1,17 @@
+{
+  "name": "srp-site",
+  "version": "0.0.1",
+  "description": "Small site for displaying sensor data",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "TSV",
+  "license": "MIT",
+  "dependencies": {
+    "date-and-time": "^0.6.3",
+    "express": "^4.16.4",
+    "serialport": "^7.1.4",
+    "socketio": "^1.0.0"
+  }
+}
