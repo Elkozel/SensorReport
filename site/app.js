@@ -10,7 +10,7 @@ var port = 80;
 app.use(express.static("public"));
 
 app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname + '/site/index.html'));
+  res.sendFile(path.join(__dirname + '/public/index.html'));
 });
 
 dispatcher.event.on("update", function (scope, msg) {
