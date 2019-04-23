@@ -1,0 +1,42 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Sensor Monitor</title>
+    <link rel="stylesheet" type="text/css" href="site.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body ng-app="Sensor-Monitor">
+    <div id="loading" class="loading">
+        <img id="loading-image" src="https://i.pinimg.com/originals/a5/7b/6e/a57b6e379a3c5c620cbac0dac14aa0cc.gif">
+        <p id="loading-status" class="loading">Please click on then screen to countinue</p>
+    </div>
+    <div id="telemetry" ng-controller="telemetry">
+        <div class="sensor" ng-repeat="sensor in report.sensors">
+            <h3 class="sensor-name">{{sensor.name}}</h3>
+            <div class="readings-container">
+                <div class="reading" ng-repeat="reading in sensor.readings">
+                    <span class="reading-name">{{reading.name}} </span>
+                    <span class="reading-number">{{reading.reading | number : 2}} {{reading.unit}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="side-trigger"></div>
+    <div id="sideview" ng-controller="side-view">
+        <div class="ports">
+            <h3>Ports</h3>
+            <h4 class="port" onclick="port(this)" ng-repeat="port in ports">{{port.comName}}</h4>
+        </div>
+        <div class="listeners">
+            <h3>Listeners</h3>
+            <h4 class="listener" onclick="listener(this)" ng-repeat="listener in listeners">{{listener.path}} ({{listener.baudRate}})</h4>
+        </div>
+    </div>
+</body>
+<script src="socket.js"></script>
+
+</html>

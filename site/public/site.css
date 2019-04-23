@@ -1,0 +1,130 @@
+body{
+    margin: 0px;
+    background-color: rgb(24,27,34);
+}
+#loading{
+    position: absolute;
+    background-color: rgb(24,27,34);
+    margin: 0px;
+    top: 0px;
+    left: 0px;
+    height: 100vh;
+    width: 100vw;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+#loading.loading{
+    opacity: 1;
+}
+#loading-image{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 55vh;
+    transform: translate(-50%, -50%);
+}
+#loading-status{
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    bottom: 4%;
+    font-size: 130%;
+    opacity: 0.2;
+    transition: opacity 0.6s ease-in;
+    color: white;
+}
+#loading-status.loading, #loading-status.loading:hover{
+    opacity: 0;
+    cursor: default;
+}
+#loading-status:hover{
+    opacity: 0.8;
+    cursor: pointer;
+}
+#telemetry{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+.sensor{
+    margin: 2%;
+    padding-bottom: 1%;
+    display: block;
+    position: relative;
+    float: left;
+    width: 22%;
+    min-width: 200px;
+    max-width: 260px;
+    background-color: lightgrey;
+    border-radius: 12px;
+}
+.sensor-name{
+    text-align: center;
+    vertical-align: middle;
+    width: 94%;
+    padding: 3%;
+}
+.readings-container{
+    margin: 3%;
+    margin-bottom: 4%;
+    overflow: hidden;
+    
+}
+.reading{
+    display: grid;
+    width: 46%;
+    margin: 2%;
+    overflow: hidden;
+    float: left;
+}
+.reading-name{
+    width: 100%;
+    font-size: 70%;
+}
+.reading-number{
+    font-size: 123%;
+    font-weight: bold;
+    padding-left: 3%;
+}
+#side-trigger{
+    position: fixed;
+    display: block;
+    min-width: 60px;
+    height: 100%;
+    width: 3%;
+}
+#side-trigger:hover ~ #sideview{
+    left: 0px;
+}
+#sideview{
+    position: fixed;
+    left: -18%;
+    width: 18%;
+    max-width: 230px;
+    height: 100%;
+    background-color: white;
+    transition: left 0.2s linear;
+}
+#sideview.active, #sideview:hover{
+    left: 0px;
+}
+.ports, .listeners{
+    height: 50%;
+    width: 100%;
+}
+.ports > h3, .listeners > h3{
+    text-align: center;
+    width: 100%;
+}
+.port, .listener{
+    cursor: pointer;
+    margin: 0px;
+    padding: 5% 0px;
+    padding-left: 5%;
+    transition: color 0.5s linear, background-color 0.5s linear;
+}
+.port:hover, .listener:hover{
+    color: white;
+    background-color: rgb(24,27,34);
+}
