@@ -10,17 +10,26 @@
 #include <EnvironmentCalculations.h>
 
 // I2C Definitions
-#define I2C_CS_Pin
-#define I2C_CK_Pin
-#define I2C_BMP280_Addr 
+#define I2C_SD_Pin A4
+#define I2C_SK_Pin A5
+#define I2C_BMP280_Addr
 #define I2C_MCP9808_Addr 0x18
 #define I2C_IMU_Addr
 
 // Declare Globals
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 BME280I2C barsensor;
+struct t_report{
+    uint8_t BMP280_flag = 0;
+    float BMP280_temp = 0;
+    float BMP280_pres = 0;
+    uint16_t BMP280_samples = 0;
+    uint8_t MCP9808_flag = 0;
+    float MCP9808_temp = 0;
+    uint16_t MCP9808_samples = 0;
+};
 
-void barRoutine(unsigned long), tempRoutine(unsigned long), setTempResolution(int);
+void barRoutine(unsigned long), tempRoutine(unsigned long), setTempResolution(int), submitReport(), reportRoutine();
 
 // MCP9808 Globals
 unsigned int MCP9808_Interval;
@@ -34,9 +43,13 @@ unsigned long BMP280_Timestamp;
 unsigned char tempFlag = 0;
 unsigned char barFlag = 0;
 
+// Global Report
+t_report c_report;
+t_report p_report;
+
 void setup() {
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(19200);
   while(!Serial) {}
 
   Serial.println(F("Starting setup"));
@@ -63,25 +76,61 @@ void loop() {
   unsigned long currentMillis = millis();
   tempRoutine(currentMillis);
   barRoutine(currentMillis);
+  reportRoutine();
+}
+
+void reportRoutine() {
+  if(c_report.BMP280_flag == 1 && c_report.MCP9808_flag == 1){
+    submitReport();
+  }
+}
+
+void submitReport() {
+  p_report = c_report;
+  t_report n_report;
+  c_report = n_report;
+  Serial.print((char) 1); // Begin transmission
+  Serial.print((char) 0); // Status of message
+  char *temp = (char *) &p_report.BMP280_temp; // Warning, spagetti code coming up!
+  for(int s=0; s<4; s++){
+    Serial.print(*(temp+s));
+  }
+  temp = (char *) &p_report.BMP280_pres;
+  for(int s=0; s<4; s++){
+    Serial.print(*(temp+s));
+  }
+  temp = (char *) &p_report.BMP280_samples;
+  for(int s=0; s<2; s++){
+    Serial.print(*(temp+s));
+  }
+  temp = (char *) &p_report.MCP9808_temp;
+  for(int s=0; s<4; s++){
+    Serial.print(*(temp+s));
+  }
+  temp = (char *) &p_report.MCP9808_samples;
+  for(int s=0; s<2; s++){
+    Serial.print(*(temp+s));
+  }
+  Serial.print((char) 4); // End transmission
 }
 
 void barRoutine(unsigned long clock) {
   if (BMP280_Timestamp < clock){
-    float temp;
-    float hum;
-    float pres;
-    BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
-    BME280::PresUnit presUnit(BME280::PresUnit_Pa);
-    barsensor.read(pres, temp, hum, tempUnit, presUnit);
-    barFlag = 1; // Raise temperature flag
-    Serial.println("BME280: ");
-    Serial.print("Temperature: ");
-    Serial.println(temp);
-    Serial.print("Pressure: ");
-    Serial.println(pres);
-    Serial.print("Humidity: ");
-    Serial.println(hum);
-    Serial.println();
+    float temp = barsensor.temp();
+    float pres = barsensor.pres();
+    if(c_report.BMP280_flag == 1){
+      c_report.BMP280_temp += temp;
+      c_report.BMP280_temp /= 2;
+      c_report.BMP280_pres += pres;
+      c_report.BMP280_pres /= 2;
+      c_report.BMP280_samples += 1;
+    }
+    else{
+      c_report.BMP280_temp = temp;
+      c_report.BMP280_pres = pres;
+      c_report.BMP280_samples = 1;
+      c_report.BMP280_flag = 1; // Raise barometer flag
+    }
     BMP280_Timestamp = clock + BMP280_Interval;
   }
 }
@@ -89,11 +138,16 @@ void barRoutine(unsigned long clock) {
 void tempRoutine(unsigned long clock) {
   if (MCP9808_Timestamp < clock){
     float temp = tempsensor.readTempC();
-    tempFlag = 1; // Raise temperature flag
-    Serial.println("MCP9808: ");
-    Serial.print("Temperature: ");
-    Serial.println(temp);
-    Serial.println();
+    if(c_report.MCP9808_flag == 1){
+      c_report.MCP9808_temp += temp;
+      c_report.MCP9808_temp /= 2;
+      c_report.MCP9808_samples += 1;
+    }
+    else{
+      c_report.MCP9808_temp = temp;
+      c_report.MCP9808_samples = 1;
+      c_report.MCP9808_flag = 1; // Raise temperature flag
+    }
     MCP9808_Timestamp = clock + MCP9808_Interval;
   }
 }
