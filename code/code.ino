@@ -91,7 +91,7 @@ void submitReport() {
   c_report = n_report;
   Serial.print((char) 1); // Begin transmission
   Serial.print((char) 0); // Status of message
-  char *temp = (char *) &p_report.BMP280_temp;
+  char *temp = (char *) &p_report.BMP280_temp; // Warning, spagetti code coming up!
   for(int s=0; s<4; s++){
     Serial.print(*(temp+s));
   }
@@ -138,7 +138,6 @@ void barRoutine(unsigned long clock) {
 void tempRoutine(unsigned long clock) {
   if (MCP9808_Timestamp < clock){
     float temp = tempsensor.readTempC();
-    
     if(c_report.MCP9808_flag == 1){
       c_report.MCP9808_temp += temp;
       c_report.MCP9808_temp /= 2;
