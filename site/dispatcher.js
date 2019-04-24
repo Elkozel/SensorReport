@@ -23,14 +23,14 @@ exports.addListener = function (path, rate) {
 
     var dataTemp = Buffer.alloc(0);
     port.on("data", function (buffer) {
-        if(dataTemp == null){
+        if(dataTemp.length == 0){
             if(buffer[0] == 1 && buffer[buffer.length-1] != 4)
-                dataTemp = Buffer.concat([dataTemp, buffer], dataTemp.length + buffer.length);
+                dataTemp = Buffer.concat([dataTemp,buffer], dataTemp.length + buffer.length);
         }
         else{
             if(buffer[buffer.length-1] == 4){
                 analyzer.feed(Buffer.concat([dataTemp, buffer], dataTemp.length + buffer.length));
-                dataTemp = null;
+                dataTemp =  Buffer.alloc(0);
             }
         }
     });

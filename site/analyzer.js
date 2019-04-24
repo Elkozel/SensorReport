@@ -35,9 +35,9 @@ exports.feed = function (data) {
         report.add(MPU9250Accel);
         report.add(MPU9250Gyro);
         report.add(MPU9250Mag);
+        report.date = new Date();
         eventEmitter.emit("report", report);
     }
-    if(data[])
 }
 
 exports.once = function() {
