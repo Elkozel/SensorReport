@@ -1,4 +1,6 @@
 #include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
 
 // Adafruit_MCP9808_Library-1.1.0 - Version: Latest 
 #include <Adafruit_MCP9808.h>
@@ -6,11 +8,15 @@
 // BME280-Release_Version_2.3.0 - Version: Latest
 #include <BME280.h>
 #include <BME280I2C.h>
-#include <BME280I2C_BRZO.h>
-#include <EnvironmentCalculations.h>
 
 // MCP9250-1.0.1 - Version: Latest
 #include <MPU9250.h>
+
+// Pin Definitions
+#define SD_MOSI 11
+#define SD_MISO 12
+#define SD_CLK 13
+#define SD_CS 4
 
 // I2C Definitions
 #define I2C_SD_Pin A4
@@ -23,6 +29,7 @@
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 BME280I2C barsensor;
 MPU9250 IMU(Wire, I2C_MPU9250_Addr);
+File logger;
 struct t_report{
     uint8_t BMP280_flag = 0;
     float BMP280_temp = 0;
@@ -67,6 +74,21 @@ void setup() {
   while(!Serial) {}
 
   Serial.println(F("Starting setup"));
+  Serial.println(F("Setting up SD card"));
+  if(!SD.begin(SD_CS)) { // If card could not be accessed
+    Serial.println(F("Could not initialize card"));
+    while(1);
+  }
+  if(!SD.exists("reports/")) // if folder reports exists
+    SD.mkdir("reports/");
+  int s = 0;
+  char filename[] = "/reports/report0.csv";
+  while(SD.exists(filename)){
+    filename[15] = ++s;
+  }
+  logger = SD.open(filename);
+  Serial.println(F("Card initialized sucessfully"));
+  
   Serial.println(F("Setting up temprature sensor"));
   if (!tempsensor.begin(I2C_MCP9808_Addr)) {
     Serial.println(F("Couldn't find MCP9808! Check your connections and verify the address is correct."));
@@ -119,10 +141,10 @@ void reportRoutine() {
 }
 
 void submitReport() {
+  saveReport();
   p_report = c_report;
   t_report n_report;
   c_report = n_report;
-  
   Serial.print((char) 1); // Begin transmission
   Serial.print((char) 1); // Set sensor BMP280/MCP9808
   Serial.write((char *)&p_report.BMP280_temp, 4);
@@ -138,11 +160,22 @@ void submitReport() {
   Serial.print((char) 4); // End transmission
 }
 
-void statusMsg(const char * msg){
-  Serial.print((char) 1); // Begin transmission
-  Serial.print((char) 0); // Set status
-  Serial.print(msg);
-  Serial.print((char) 4); // End transmission
+void saveReport(){
+  logger.write("(");
+  logger.write(millis());
+  logger.write(")");
+  logger.write((char *)&c_report.BMP280_temp, 4);
+  logger.write((char *)&c_report.BMP280_pres, 4);
+  logger.write((char *)&c_report.BMP280_samples, 2);
+  logger.write((char *)&c_report.MCP9808_temp, 4);
+  logger.write((char *)&c_report.MCP9808_samples, 2);
+  logger.write((char *)&c_report.MPU9250_accel, 12);
+  logger.write((char *)&c_report.MPU9250_gyro, 12);
+  logger.write((char *)&c_report.MPU9250_mag, 12);
+  logger.write((char *)&c_report.MPU9250_temp, 4);
+  logger.write((char *)&c_report.MPU9250_samples, 2);
+  logger.write("\n");
+  logger.flush();
 }
 
 void barRoutine(unsigned long clock) {
