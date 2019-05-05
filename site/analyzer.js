@@ -27,8 +27,7 @@ exports.feed = function (data) {
         MPU9250Mag.add(new Reading("Y:", data.readFloatLE(46)));
         MPU9250Mag.add(new Reading("Z:", data.readFloatLE(50)));
         var MPU9250Temp = new Sensor("MPU9250");
-        MPU9250Temp.add(new Reading("Temperature", data.readFloatLE(54)));
-        MPU9250Temp.add(new Reading("Sample", data.readInt16LE(58)));
+        MPU9250Temp.add(new Reading("Sample", data.readInt16LE(54)));
         report.add(BME280);
         report.add(MCP9808);
         report.add(MPU9250Temp);
