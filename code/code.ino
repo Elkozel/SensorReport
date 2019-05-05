@@ -235,7 +235,7 @@ void IMURoutine(unsigned long clock) {
       c_report.MPU9250_mag[1] = IMU.getMagY_uT();
       c_report.MPU9250_mag[2] = IMU.getMagZ_uT();
       c_report.MPU9250_flag = 1;
-      c_report.MPU9250_samples++;
+      c_report.MPU9250_samples = 1;
     }
     MPU9250_Timestamp = clock + MPU9250_Interval;
   }
