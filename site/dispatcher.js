@@ -21,8 +21,18 @@ exports.addListener = function (path, rate) {
     listeners.push(port);
     eventEmitter.emit("update", "listeners", listeners);
 
-    port.on("data", function (data) {
-        analyzer.feed(data);
+    var dataTemp = Buffer.alloc(0);
+    port.on("data", function (buffer) {
+        if(dataTemp.length == 0){
+            if(buffer[0] == 1 && buffer[buffer.length-1] != 4)
+                dataTemp = Buffer.concat([dataTemp,buffer], dataTemp.length + buffer.length);
+        }
+        else{
+            if(buffer[buffer.length-1] == 4){
+                analyzer.feed(Buffer.concat([dataTemp, buffer], dataTemp.length + buffer.length));
+                dataTemp =  Buffer.alloc(0);
+            }
+        }
     });
 
     port.on("error", function (err) {
@@ -39,7 +49,7 @@ analyzer.event.on("report", function (report) {
     eventEmitter.emit("report", report);
 })
 
-exports.once = function(){
+exports.once = function () {
     analyzer.once();
 }
 
